@@ -6,6 +6,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -15,6 +16,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.util.Map;
+import java.util.Properties;
 
 
 @Configuration
@@ -41,17 +43,21 @@ public class HibernateConfig {
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() throws PropertyVetoException {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) throws PropertyVetoException {
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
-        factoryBean.setDataSource(dataSource());
+        factoryBean.setDataSource(dataSource);
         factoryBean.setPackagesToScan("web.models");
-        factoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        factoryBean.setJpaPropertyMap(Map.of(
-                "hibernate.hbm2ddl.auto", "update",
-                "hibernate.dialect", "org.hibernate.dialect.MySQLDialect",
-                "hibernate.show_sql", "true",
-                "hibernate.format_sql", "true"
-        ));
+
+        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        factoryBean.setJpaVendorAdapter(vendorAdapter);
+
+        Properties jpaProperties = new Properties();
+        jpaProperties.put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+        jpaProperties.put("hibernate.dialect", env.getProperty("hibernate.dialect"));
+        jpaProperties.put("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
+        jpaProperties.put("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
+
+        factoryBean.setJpaProperties(jpaProperties);
         return factoryBean;
     }
 

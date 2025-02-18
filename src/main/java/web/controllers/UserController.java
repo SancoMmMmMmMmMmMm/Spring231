@@ -48,7 +48,7 @@ public class UserController {
     @GetMapping("/show/edit")
     public String editUser(Model model, @RequestParam("id") int id) {
         model.addAttribute("user", userService.showUserById(id));
-        return "user/edit_user";
+        return "user/edit_users";
     }
 
     @PostMapping("/update")
